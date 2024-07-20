@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>特戰武器布局</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Arial', sans-serif;
+            background-color: #1a1a2e;
+            color: #ffffff;
+        }
+        #container {
+            position: relative;
+            width: 1200px;
+            height: 675px;
+            background-color: #1a1a2e;
+            margin: 0 auto;
+        }
+        .weapon-slot {
+            position: absolute;
+            width: 200px;
+            height: 90px;
+            border: 2px solid #00ffff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            overflow-y: auto;
+        }
+        .weapon-slot:hover {
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+        }
+        .weapon-item {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 40px;
+            margin-bottom: 2px;
+        }
+        .weapon-item img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.7);
+        }
+        .modal-content {
+            background-color: #16213e;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 300px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .close:hover {
+            color: #fff;
+        }
+        select, button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            border: none;
+            border-radius: 5px;
+            background-color: #0f3460;
+            color: white;
+            cursor: pointer;
+        }
+        button {
+            background-color: #e94560;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #ff6b6b;
+        }
+    </style>
+</head>
+<body>
+    <div id="container"></div>
+
+    <div id="weaponModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>選擇武器類型</h2>
+            <select id="weaponType" onchange="updateWeaponOptions()">
+                <option value="">請選擇武器類型</option>
+                <option value="pistol">手槍</option>
+                <option value="smg">衝鋒槍</option>
+                <option value="rifle">步槍</option>
+                <option value="sniper">狙擊槍</option>
+                <option value="shotgun">霰彈槍</option>
+                <option value="lmg">機槍</option>
+                <option value="melee">近戰武器</option>
+            </select>
+            <select id="weaponName" style="display: none;">
+                <!-- 武器選項將通過 JavaScript 動態填充 -->
+            </select>
+            <button onclick="addWeapon()" id="confirmButton" style="display: none;">新增武器</button>
+        </div>
+    </div>
+
+    <script>
+        const slots = [
+            {x: 30, y: 30, count: 5},
+            {x: 250, y: 30, count: 4},
+            {x: 470, y: 30, count: 4},
+            {x: 690, y: 30, count: 4},
+            {x: 910, y: 30, count: 2},
+            {x: 910, y: 240, count: 2},
+            {x: 470, y: 450, count: 1}
+        ];
+
+        const weapons = {
+            pistol: ["制式手槍", "短管", "狂弒", "鬼魅", "神射"],
+            smg: ["刺針", "惡靈"],
+            rifle: ["幻象", "暴徒", "鬥牛犬", "捍衛者"],
+            sniper: ["警長", "逃犯", "間諜"],
+            shotgun: ["重砲", "判官"],
+            lmg: ["戰神", "奧丁"],
+            melee: ["戰術小刀"]
+        };
+
+        let currentSlot = null;
+
+        function createSlots() {
+            const container = document.getElementById('container');
+            slots.forEach((column, colIndex) => {
+                for (let i = 0; i < column.count; i++) {
+                    const div = document.createElement('div');
+                    div.className = 'weapon-slot';
+                    div.style.left = `${column.x}px`;
+                    div.style.top = `${column.y + i * 105}px`;
+                    div.onclick = () => openModal(div);
+                    container.appendChild(div);
+                }
+            });
+        }
+
+        function openModal(slot) {
+            currentSlot = slot;
+            document.getElementById('weaponModal').style.display = 'block';
+            document.getElementById('weaponType').value = "";
+            document.getElementById('weaponName').style.display = 'none';
+            document.getElementById('confirmButton').style.display = 'none';
+        }
+
+        function updateWeaponOptions() {
+            const weaponType = document.getElementById('weaponType').value;
+            const weaponNameSelect = document.getElementById('weaponName');
+            weaponNameSelect.innerHTML = '';
+            
+            if (weaponType) {
+                weapons[weaponType].forEach(weapon => {
+                    const option = document.createElement('option');
+                    option.value = weapon;
+                    option.textContent = weapon;
+                    weaponNameSelect.appendChild(option);
+                });
+                weaponNameSelect.style.display = 'block';
+                document.getElementById('confirmButton').style.display = 'block';
+            } else {
+                weaponNameSelect.style.display = 'none';
+                document.getElementById('confirmButton').style.display = 'none';
+            }
+        }
+
+        function addWeapon() {
+            if (currentSlot) {
+                const weaponName = document.getElementById('weaponName').value;
+                const weaponItem = document.createElement('div');
+                weaponItem.className = 'weapon-item';
+                
+                const img = document.createElement('img');
+                img.src = `/api/placeholder/200/40?text=${encodeURIComponent(weaponName)}`;
+                img.alt = weaponName;
+                img.title = weaponName;
+                
+                weaponItem.appendChild(img);
+                currentSlot.appendChild(weaponItem);
+
+                // 調整滾動位置以顯示新添加的武器
+                currentSlot.scrollTop = currentSlot.scrollHeight;
+            }
+            document.getElementById('weaponModal').style.display = 'none';
+        }
+
+        document.querySelector('.close').onclick = function() {
+            document.getElementById('weaponModal').style.display = 'none';
+        }
+
+        window.onclick = function(event) {
+            if (event.target == document.getElementById('weaponModal')) {
+                document.getElementById('weaponModal').style.display = 'none';
+            }
+        }
+
+        createSlots();
+    </script>
+</body>
+</html>
